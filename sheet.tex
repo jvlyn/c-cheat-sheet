@@ -1,0 +1,668 @@
+% ----- STANDARD DOCUMENT HEADER (ALWAYS INCLUDE) ------
+
+\documentclass{article}
+% describes the class (can be article, book, beamer, etc)
+\usepackage[utf8]{inputenc}
+% default encoding
+\usepackage{amsmath}
+% useful for aligning equations, math mode, numbering equations
+\usepackage{amssymb}
+% provides various math symbols as well as \mathbb option
+\usepackage{amsthm}
+% allows for theorem, definition, etc environments
+\theoremstyle{definition} % non-italic theorems
+\newtheorem{theorem}{Theorem}[subsection]
+\newtheorem{corollary}{Corollary}[subsection]
+\newtheorem{lemma}{Lemma}[subsection]
+\newtheorem{proposition}{Proposition}[subsection]
+\newtheorem{definition}{Definition}[subsection]
+\newtheorem{example}{Example}[subsection]
+
+\usepackage{textcomp}
+\newcommand{\mytilde}{\raisebox{0.5ex}{\texttildelow}}
+% honestly, the way latex handles tildes... :(
+
+\usepackage[margin=1in]{geometry}
+% sets the margins of the page to 1 inch
+
+% ----- FUN DISPLAY OPTIONS -------
+
+\usepackage{tikz}
+% allows creation of tikz graphics
+\usepackage{pgfplots}
+% accompanies tikz, used to plot equations
+\usepackage{changepage}
+% used for the adjustwidth command (in solution macro)
+\usepackage{graphicx}
+\graphicspath{ {images/} } % ShareLatex path only
+% used to include pictures (.png, .jpeg) through path
+\usepackage{gensymb}
+% used for \degree, \celsius, commands
+\usepackage{fancyhdr}
+% used to create the header (three columns)
+\usepackage{multicol}
+% handles multiple columns
+\usepackage{enumitem}
+% allows for mangling of list numbering
+\usepackage{minted}
+\usemintedstyle{vs}
+% used to include code snippets
+
+% ----- MISCELLANEOUS MACROS -------
+
+\newcommand{\nline}{\vspace{\baselineskip}}
+% set up macro for newlines \nline
+\renewcommand{\arraystretch}{1.2}
+% make the arrays/tabular environ. look prettier
+\definecolor{grey}{gray}{0.8}
+% my favorite all-purpose shade of gray
+\newcommand{\com}[1]{\textcolor{grey}{#1}}
+% for comments and asides
+\newcommand{\q}[1]{\overline{#1}}
+% for all your bar needs (math)
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C Cheat Sheet}
+\chead{CSCI 2021}
+\rhead{Julie Yuan}
+\setlength{\headheight}{26pt}
+\cfoot{\thepage}
+
+\newenvironment{solution}
+    { \vspace{\baselineskip}
+    \begin{adjustwidth}{1cm}{}
+    \textit{Solution.}
+    }
+    {\end{adjustwidth}
+    \vspace{\baselineskip}
+    }
+
+\newenvironment{code}
+    { \VerbatimEnvironment
+    \begin{minted}[bgcolor=grey]{c} }
+    {\end{minted} }
+
+
+\begin{document}
+\begin{flushleft}
+
+\section{Basic Data Types}
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    type & bytes & example & notes \\
+    \hline
+    \texttt{char} & 1 & \texttt{`a'} & \texttt{signed} or \texttt{unsigned} \\
+    \hline
+    \texttt{short} & 2 & \texttt{32000} & \texttt{signed} or \texttt{unsigned} \\
+    \hline
+    \texttt{int} & 4 & \texttt{2000000000} & \texttt{signed} or \texttt{unsigned} \\
+    \hline
+    \texttt{long} & 8 & 19-digit number & \texttt{signed} or \texttt{unsigned} \\
+    \hline
+    \texttt{float} & 4 & 6-7 significant digits & \\
+    \hline
+    \texttt{double} & 8 & 15 significant digits & \\
+    \hline
+    \texttt{pointer} & 8 (on 64-bit machine) & \texttt{int *ip} & use \texttt{void *p} for ``wildcard'' pointer \\
+    \hline
+    \texttt{array} &  & \texttt{double arr[10]} & \textit{cannot} be used as a variable \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\textit{Note.} Ranges of \texttt{signed} integer ranges are slightly assymmetric (ex, \texttt{-128} to \texttt{127}) because of two's complement representation. If the qualifier \texttt{unsigned} is used, values are always nonnegative (for example, \texttt{char} ranges from \texttt{0} to \texttt{255}).
+
+\nline
+
+\textbf{Booleans}: C has no keywords for boolean values; instead, all nonnegative values are taken to be ``true'' and zero is taken to be ``false''
+
+\nline
+
+\textbf{Strings}: C has no string type; instead, strings are stored as \textit{character arrays} $\to$ note that strings are stored internally with a \texttt{`\textbackslash 0'} at the end (to delimit the end of the string)
+
+\nline
+
+\textit{Note.} Variables which are only \textit{declared} and not \textit{initialized} will contain some ``garbage'' value.
+
+\nline
+
+\textbf{Casting}: syntax is \texttt{(type) variable}
+
+\section{Control Structures}
+
+C has many of the same control structures as Java. In particular, the following are valid in C:
+
+\begin{enumerate}
+    \item the \texttt{if-else} statement block:
+    \begin{code}
+    if ((something)&&(another)) {
+        statement1;
+        statement2; }
+    else if ((one)||(two)) {
+        statement 3; }
+    else {
+        statement 4; }
+    \end{code}
+    \item the \texttt{while} loop:
+    \begin{code}
+    while (something) {
+        statements;
+    }
+    \end{code}
+    \item the \texttt{for} loop:
+    \begin{code}
+    for (i = 0; i < 100; i++) {
+        statements;
+    }
+    \end{code}
+    \item keywords: \texttt{break}, \texttt{continue}
+\end{enumerate}
+
+One piece of control that is unique to C is the \texttt{goto} and \texttt{label} syntax. These two keywords can be used to break out of multiple nested loops. For example:
+
+\begin{code}
+while (condition) {
+    while (condition) {
+        if (disaster) {
+            goto error;
+        }
+    }
+}
+error:
+    do something;
+\end{code}
+
+Note that the scope of the \texttt{label} is the entire function and labels are used just like variable names.
+
+\section{Basic I/O}
+
+The \texttt{printf} function is used to output information to the terminal. It takes 2+ arguments: (1) a string indicating how the output should be formatted, and (2) a list of the data to be outputted. For example,
+
+\begin{code}
+printf("%d %d", 7, 10) // prints 7 10
+\end{code}
+
+\begin{center}
+
+\begin{tabular}{|c|c|}
+    \hline
+    specifier & meaning \\
+    \hline
+    \texttt{"\%d"} & print as decimal integer \\
+    \hline
+    \texttt{"\%6d"} & decimal int, 6 characters wide \\
+    \hline
+    \texttt{"\%f"} & floating point value \\
+    \hline
+    \texttt{"\%.2f"} & floating point, to 2 characters after decimal point \\
+    \hline
+    \texttt{"\%c"} & character \\
+    \hline
+    \texttt{"\%s"} & character string \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+The \texttt{scanf} function is used to accept input from the command line.
+
+\nline
+
+Standard functions:
+
+\begin{code}
+FILE *fopen(char *fname, char *mode);
+int fclose(FILE *fh);
+int fscanf(FILE *fh, char *format, addr1, ...);
+int fprintf(FILE *fh, char *format, arg1, ...);
+void rewind(FILE *fh);
+\end{code}
+
+Binary data I/O:
+
+\begin{code}
+size_t fread(void *dest, size_t byte_size, size_t quantity, FILE *fh);
+size_t fwrite(void *src, size_t byte_size, size_t quantity, FILE *fh);
+\end{code}
+
+\section{Functions in C}
+
+C uses \textbf{header} files to declare functions that exist. If you don't want to use a header file, you need to declare functions one by one within the file with the \texttt{main} function.
+
+
+\section{Internal Representation}
+
+Computers have three possible internal representations of numbers:
+
+\begin{enumerate}
+    \item \textbf{two's complement}
+    \item unsigned - can lead to overflow, obeys arithmetic rules (associativity and commutativity)
+    \item floating-point - uses $+\infty$ symbol, \textit{not} associative
+\end{enumerate}
+
+\subsection{Binary and Hexadecimal}
+
+A \textbf{byte} of memory (8 bits) is the smallest addressable form of memory. Every byte of memory is labeled with a unique address. There are three different ways to represent a single byte of information:
+
+\begin{enumerate}
+    \item decimal notation - ranges from 0 to 255
+    \item binary notation - ranges from 00000000 to 11111111
+    \item hexadecimal notation - ranges from 00 to FF
+\end{enumerate}
+
+Conversion from one type to another:
+
+\begin{center}
+
+\begin{tabular}{|c|c|}
+    \hline
+    type & how/example \\
+    \hline
+    decimal to binary & divide repeatedly by 2, take the remainders and arrange from right to left \\
+    & ex. $38 = 32 + 4 + 2 = 00100110$ \\
+    \hline
+    binary to decimal & starting from the right, multiply each digit by $2^i$ where $i$ is the place of the digit \\
+    & ex. $01001111 = 1 \cdot 2^0 + 1 \cdot 2^1 + 1 \cdot 2^2 + 1 \cdot 2^3 + 1 \cdot 2^6 = 79$ \\
+    \hline
+    decimal to hex & divide repeatedly by 16, take the remainders and arrange from right to left \\
+    & ex. $50 = 3 \cdot 16 + 2 = 32$ \\
+    \hline
+    hex to decimal & starting from right, multiply each digit by $16^i$ where $i$ is place of digit \\
+    & ex. FF $= 15 \cdot 16^1 + 15 = 255$ \\
+    \hline
+    binary to hex & break into ``blocks'' of four from the right and convert each to decimal \\
+    & ex. $1011000111 = 0010 \; 1100 \; 0111 = 2 \text{C}  7$ \\
+    \hline
+    hex to binary & convert each digit to a four-block of binary and concatenate \\
+    & ex. $39\text{A}7\text{F}8 = 0011 \; 1001 \; 1010 \; 0111 \; 1111 \; 1000 = 001110011010011111111000$ \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\textit{Note.} In C (and other languages), hexadecimal values are denoted as beginning with the string \texttt{"0x"} and letters can either be capitalized, lowercase, or a mixture.
+
+\nline
+
+\textit{Note.} \textbf{Octal} typically arises in association with Unix file permissions. Every file has $3$ permissions (read, write, execute) for $3$ entities (user, group, and other). The readable version is to use \texttt{chmod u=rw g=rw o=rx}.
+
+\nline
+
+\textbf{Word size}: refers to the size of integer and pointer data; for example, most machines today are $64$-bit which means that virtual addresses can range from $0$ to $2^{64} - 1$.
+
+\nline
+
+\textbf{Byte storage}: A multi-byte object is stored as a contiguous sequence of bytes, with the address of the object pointing to the smallest address of bytes used. The two common conventions for ordering bytes are: (1) \textit{little endian} where the least significant byte comes first, and (2) \textit{big endian} where the most significant byte comes first.
+
+\subsection{Bitwise Operations}
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|}
+    \hline
+    symbol & name & example \\
+    \hline
+    \texttt{\&} & AND & \texttt{00111100 \& 00001101 = 00001100} \\
+    \hline
+    \texttt{|} & OR & \texttt{00111100 | 00001101 = 00111101} \\
+    \hline
+    \texttt{\string^} & EXOR & \texttt{00111100 \string^ 00001101 = 00110001} \\
+    \hline
+    \texttt{<<} & left shift & \texttt{00111100 << 2 = 11110000} \\
+    \hline
+    \texttt{>>} & right shift & \texttt{00111100 >> 2 = 00001111} \\
+    \hline
+    \texttt{\mytilde} & one's complement & \texttt{\mytilde 00111100 = 11000011} \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\textit{Note.} There are technically two different variations of right shift. The first, \textbf{logical} right shift, fills the shifted places with zeroes while the second, \textbf{arithmetic} right shift, fills the shifted places with copies of the most significant bit. Note also that shifts only work on \textit{integral} types (\textit{not} floating point values).
+
+\nline
+
+To pull it all together, consider the following example:
+
+\begin{code}
+// get n bits starting at p (from right)
+unsigned getbits(unsigned x, int p, int n) {
+    return (x >> (p + 1 - n)) & ~ (~ 0 << n) ;
+}
+\end{code}
+
+How does this function work? The first portion (before the \texttt{\&}) shifts the bits that we want to the rightmost location. The next portion creates a bit pattern with \texttt{0}s in all of the locations that we \textit{don't} want and \texttt{1}s in all remaining locations. Finally, the \texttt{\&} operator removes the unwanted bits.
+
+\nline
+
+\textbf{Bit vectors}: Let the set $A = \{0,1,\dots,w-1\}$ correspond to the bit vector $[a_{w-1},\dots,a_1,a_0]$ where $a_i = 1$ if and only if $i \in A$. For example, $A = \{0,3,5,6\}$ corresponds to the bit vector $[01101001]$.
+
+\nline
+
+\textit{Note.} There is a nice correspondence between bitwise operations and set operations.
+
+\begin{center}
+
+\begin{tabular}{|c|c|}
+    \hline
+    bitwise operation & set operation  \\
+    \hline
+    \texttt{\&} (AND) & $\bigcap$ (intersection) \\
+    \hline
+    \texttt{|} (OR) & $\bigcup$ (union) \\
+    \hline
+    \texttt{\mytilde} (NOT) & $A^c$ (complement) \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\begin{code}
+void swap_inplace(int *x, int *y) {
+    *y = *x ^ *y; // y = x ^ y
+    *x = *x ^ *y; // x = x ^ (x ^ y) = y
+    *y = *x ^ *y; // y = y ^ (x ^ y) = x
+}
+\end{code}
+
+\subsection{Signed and Unsigned Integers}
+
+\textbf{Two's complement encoding}: the most common way to represent signed integers
+
+\begin{itemize}
+    \item if $\textbf{x} = [x_{w-1} x_{w-2} \cdots x_{1} x_0]$, then the encoding is $-x_{w-1} 2^{w-1} + \cdots + x_1 2^{1} + x_0$
+    \item ex. $1011 = -1 \cdot 2^3 + 1 \cdot 2^1 + 1 = -5$
+    \item maximum value: $[011\cdots1] = 2^{w-1}-1$
+    \item minimum value: $[100\dots0] = -2^{w-1}$
+\end{itemize}
+
+\textbf{Conversion between signed and unsigned}: casting maintains the bit-level representations and simply changes the decimal value based on binary or two's complement encoding
+
+\begin{itemize}
+    \item on the surface, C uses \texttt{(unsigned) x} and \texttt{(int) x} syntax
+    \item signed $\to$ unsigned: if we have $\textbf{x} = [x_{w-1} x_{w-2} \cdots x_{1} x_0]$ with signed encoding $\textbf{x}'$, then the unsigned encoding is $x_{w-1}2^w + \textbf{x}'$ or
+    \[
+    x_{\text{unsigned}} = \begin{cases}
+    x_{\text{signed}} + 2^w \quad &\text{if} \; x < 0 \\
+    x_{\text{signed}} \quad &\text{if} \; x \geq 0.
+    \end{cases}
+    \]
+    \item unsigned $\to$ signed: if we have $\textbf{x} = [x_{w-1} x_{w-2} \cdots x_{1} x_0]$ with unsigned encoding $\textbf{x}'$, then the signed encoding is $-x_{w-1} 2^w + \textbf{x}'$ or
+    \[
+    x_{\text{signed}} = \begin{cases}
+    x_{\text{unsigned}} - 2^w \quad &\text{if} \; x \geq 2^{w-1} \\
+    x_{\text{unsigned}} \quad &\text{if} \; x < 2^{w-1}.
+    \end{cases}
+    \]
+\end{itemize}
+
+Quirks that are specific to C:
+
+\begin{itemize}
+    \item implicit casting: if you assign a signed integer to an unsigned variable or vice versa, C will cast implicitly; this also occurs if you print a signed integer with \texttt{"\%u"} or vice versa
+    \item arithmetic operations: using \texttt{+, -, *}, etc on a combination of an unsigned and signed will cause the signed integer to be converted to unsigned
+\end{itemize}
+
+\textbf{Expanding and compressing bits}:
+
+\begin{itemize}
+    \item expanding an unsigned integer: \textbf{zero extension} (add zeroes in front)
+    \item expanding a signed integer: \textbf{sign extension} (add copies of the most significant bit)
+    \begin{itemize}
+        \item Why does this work? Because if the most significant bit is \texttt{0}, we have the same situation as the unsigned case. If the MSB is \texttt{1}, then we see that
+        \[
+        -1 \cdot 2^w + 2^{w-1} = -2^{w-1}
+        \]
+        and the rest of the proof proceeds by induction.
+    \end{itemize}
+    \item compressing an unsigned integer: compute $x$ mod $2^k$ if compressing to $k$ bits
+    \begin{itemize}
+        \item Why does this work? Because the the first $w-k$ bits are dropped.
+    \end{itemize}
+    \item compressing a signed integer: convert to unsigned $\to$ compute $x$ mod $2^k$ $\to$ convert back to signed
+\end{itemize}
+
+\subsection{Integer Arithmetic}
+
+\textbf{Unsigned addition}: if we have two $w$-bit integers $x$ and $y$, their sum could potentially ``overflow'' (giving $w+1$ bits)
+
+\begin{itemize}
+    \item Solution? Compute \textbf{modulo $2^w$} (can also think of this as discarding the most significant bit if overflow occurs).
+\end{itemize}
+
+\textbf{Signed addition}: if $x$ and $y$ are $w$-bit signed integers, then
+\[
+x + y = \begin{cases}
+x + y - 2^w \quad &\text{if} \; 2^{w-1} \leq x + y \\
+x + y \quad &\text{if} \; -2^{w-1} \leq x + y < 2^{w-1} \\
+x + y + 2^w \quad &\text{if} \; x + y < -2^{w-1}.
+\end{cases}
+\]
+This is essentially a variation of computing modulo $2^w$ where negative results are also reduced.
+
+\nline
+
+\textbf{Signed negation}: if $x$ and $y$ are $w$-bit signed integers, then
+\[
+-x = \begin{cases}
+-2^{w-1} \quad &\text{if} \; x = -2^{w-1} \\
+-x \quad &\text{if} \; -2^{w-1} < x < 2^{w-1}.
+\end{cases}
+\]
+
+\textbf{Unsigned multiplication}: if $x$ and $y$ are $w$-bit unsigned integers, then
+\[
+x \cdot y = (x \cdot y) \mod 2^w.
+\]
+This means that any ``overflow'' bits are simply truncated off (from the most significant bit).
+
+\nline
+
+\textbf{Signed multiplication}: convert to unsigned integers $\to$ multiply as unsigned integers (including truncation) $\to$ convert back to signed integers
+
+\nline
+
+Why does this work? The low-order bits (post-truncation) of the result are the same, whether we multiply as unsigned integers or signed integers.
+
+\nline
+
+\textbf{Multiplying by constants}: for both unsigned and signed integers, multiplying by the $k$th power of $2$ is equivalent to a left shift by $k$ bits, i.e.,
+\[
+x \cdot 2^k \qquad \cong \qquad \texttt{x << k}.
+\]
+
+\textbf{Dividing by constants}:
+
+\begin{itemize}
+    \item \textbf{logical} right shift by $k$ bits is equivalent to division by $2^k$ for unsigned integers
+    \item \textbf{arithmetic} right shift by $k$ bits is equivalent to division by $2^k$ for signed integers
+\end{itemize}
+
+\subsection{Floating Point Representation}
+
+\textbf{IEEE floating point} is the standardized way to represent floating point numbers. In $64$-bit machines, the allocations are as follows:
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    name & sign & exponent & significand \\
+    \hline
+    \# of bits & 1 & 11 & 52 \\
+    \hline
+    representation & $s$ & $e_{k-1}\cdots e_1 e_0$ & $f_{n-1} \cdots f_1 f_0$ \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+The formulas for conversion are given below:
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    name & use & significand & exponent \\
+    \hline
+    normalized & exponent bits have $0$s and $1$s & $1 + \sum_{i=0}^{n-1} f_i \cdot 2^{-(n-i)}$ & $e_{k-1}\cdots e_0$ (unsigned) $ - 2^{k-1}-1$ \\
+    \hline
+    denormalized & exponent bits all $0$ & $\sum_{i=0}^{n-1} f_i \cdot 2^{-(n-i)}$ & $1 - (2^{k-1} - 1)$ \\
+    \hline
+    special & exponent bits all $1$ & $+\infty, -\infty$, \texttt{NaN} &  \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\subsection{Character Representation}
+
+The \textbf{ASCII standard} is most commonly used: uses $7$ bits to encode a character. The more general form is \textbf{UTF-8} which uses the $8$th bit to indicate an extension to more than a single byte.
+
+\section{Pointers and Arrays}
+
+Use the syntax \texttt{\&c} to indicate that you want the \textbf{address} of \texttt{c}. This creates a \textbf{pointer} to the memory location at which \texttt{c} is stored. Note that this can only be applied to variables, objects, and arrays. Use the syntax \texttt{*c} to \textbf{dereference} a pointer and access the value to which it is pointing. For example:
+
+\begin{code}
+int x = 1, y = 2;
+int *ip; // indicates that ip is a pointer to an integer
+ip = &x; // ip points to the location where x is stored
+y = *ip; // set y to the same object as x
+*ip = 0; // set whatever is at the location pointed to by ip to 0
+\end{code}
+
+Using pointers and functions:
+
+\begin{code}
+double myfunc(char *); // myfunc takes in a pointer to a char and returns a double
+\end{code}
+
+\textit{Note.} If \texttt{ip} points to the integer \texttt{x}, then \texttt{*ip} can be used in any context where \texttt{x} can. For example, \texttt{*ip = *ip + 10} is equivalent to \texttt{x = x + 10}.
+
+\nline
+
+\textbf{Arrays}: The syntax \texttt{int a[SIZE]} defines a block of \texttt{SIZE} consecutive objects \texttt{a[0], a[1],..., a[SIZE-1]}. By definition, the value of a variable of type array is the address of the 1st (0-index) element of the array. Because of this, the following pairs of statements are identical:
+
+\begin{code}
+pa = &a[0];     pa = a;
+a[i];           *(a+i);
+&a[i];          a+i;
+pa[i];          *(pa+i);
+\end{code}
+
+Essentially, an array-and-index expression is equivalent to one written as a pointer-and-offset.
+
+\nline
+
+\textit{However}, arrays are \textit{not} variables. The variable pointing to an array cannot be set equivalent to any other expression and cannot be incremented. Passing an array into a function is equivalent to passing a pointer to the 1st (0-index) element. For example:
+
+\begin{code}
+int strlen(char *s) {
+    int n;
+    for (n = 0; *s != '\0'; s++) {
+        n++;
+    }
+    return n;
+}
+/* this function "works" because passing in a string is equivalent to passing in a
+character array which is equivalent to passing in a pointer to the 1st character */
+\end{code}
+
+Comparison of pointers and arrays:
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|}
+    \hline
+    property & pointer & array \\
+    \hline
+    location is: & changeable & fixed \\
+    \hline
+    location is: & assigned by user & determined by compiler \\
+    \hline
+    brace indexing? & \texttt{int z = p[0];} & \texttt{int z = a[0];} \\
+    \hline
+    dereferencing? & yes & no \\
+    \hline
+    assign to array? & yes & no \\
+    \hline
+    tracks length? & no & no \\
+    \hline
+\end{tabular}
+
+\end{center}
+
+\textit{Note.} Often, the difference between a pointer and an array won't be obvious and they can often be used interchangeably. For example, a function which takes an array as a formal parameter can also take a pointer and vice versa.
+
+\nline
+
+\textbf{Initializing an array of characters}: (i.e., a string)
+
+\begin{code}
+char str[8] = "hello";
+// stored implicitly as 'h' 'e' 'l' 'l' 'o' '\0'
+printf("%s\n", str); // prints "hello"
+
+// the following also works the same way
+char *str = "hello";
+\end{code}
+
+\subsection{Dynamic Memory Allocation}
+
+C uses \texttt{malloc()} and \texttt{free()} for the dynamic allocation and de-allocation of memory. In general, use these functions when:
+
+\begin{itemize}
+    \item You have a data structure which needs to store an arbitrary set of data values of indeterminate length (linked list versus fixed array list).
+    \item You need to pass a pointer to an object (an array, a string, etc) outside of a function.
+\end{itemize}
+
+\begin{code}
+int *ptr = malloc(4 * sizeof(int)); // mallocs 16 bytes
+\end{code}
+
+Note that memory that is \texttt{malloc()}'d is located in the heap, \textit{not} the stack.
+
+%\textit{Note.} Pointer arithmetic typically has more readable alternatives: for example, using arrays as arrays.
+
+
+\section{Data Structures}
+
+The \texttt{struct} is C's way of defining a collection of heterogeneous data. Each \textbf{field} in a struct has its own type. You can access elements with the dot notation. Access elements with the \texttt{->} notation if you want a pointer to the element.
+
+\begin{code}
+typedef struct {
+    int field1;
+    double field2;
+    int field3[6];
+} thing_t
+
+thing_t thing_a = {
+    .field1 = 15,
+    .field2 = 10.5,
+    .field3 = {17, 27, 13},
+}
+\end{code}
+
+Structs are stored in a sequential, contiguous block. However, there may be some ``padding'' so that the ends of each field align with word boundaries or even addresses.
+
+\nline
+
+Structs use both dot \texttt{.} and arrow \texttt{->} notation for access to elements. Some examples:
+
+\begin{code}
+mystruct_t *ptr = malloc(sizeof(mystruct_t));
+ptr->length = 0; // ptr->x is equal to *(ptr.x)
+&ptr->length; // gives the actual memory address
+mystruct_t *fiveptr = malloc(5 * sizeof(mystruct_t));
+fiveptr[1].length = 0; // does same thing as above
+// because brackets are implicit dereference
+\end{code}
+
+
+\end{flushleft}
+\end{document}
